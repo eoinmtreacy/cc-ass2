@@ -4,3 +4,4 @@ SQLAlchemy
 flask_sqlalchemy
 psycopg2-binary
 pika
+python-dotenv

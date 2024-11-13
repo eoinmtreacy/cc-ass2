@@ -1,5 +1,15 @@
 import pytest
-from user_service.main import app, db, User
+from main import app, db, User
+import dotenv
+import os
+
+dotenv.load_dotenv()
+
+db_user = os.getenv('POSTGRES_USER')
+db_password = os.getenv('POSTGRES_PASSWORD')
+db_host = os.getenv('POSTGRES_HOST')
+db_port = os.getenv('POSTGRES_PORT')
+db_name = os.getenv('POSTGRES_DB')
 
 # FILE: user-service/test_main.py
 
@@ -7,7 +17,7 @@ from user_service.main import app, db, User
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
     with app.test_client() as client:
         with app.app_context():
             db.create_all()

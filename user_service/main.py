@@ -1,6 +1,10 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+import dotenv
 import os
+
+dotenv.load_dotenv()
 
 db_user = os.getenv('POSTGRES_USER')
 db_password = os.getenv('POSTGRES_PASSWORD')
@@ -31,6 +35,20 @@ class User(db.Model):
         }
 with app.app_context():
     db.create_all()
+
+
+@app.route('/', methods=['GET'])
+def health_check():
+    try:
+        result = db.session.execute(text(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
+        )).scalar()
+        if result:
+            return jsonify({"message": "Healthy"}), 200
+        else:
+            return jsonify({"message": "Unhealthy: 'users' table does not exist"}), 500
+    except Exception as e:
+        return jsonify({"message": "Unhealthy: " + str(e)}), 500
 
 
 # CREATE users

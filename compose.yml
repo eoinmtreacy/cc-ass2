@@ -7,3 +7,20 @@ services:
       POSTGRES_DB: practical2
     ports:
       - "5432:5432"
+
+  user_service:
+    build: ./user_service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: practical2
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      FLASK_APP: main.py
+      FLASK_ENV: development
+    volumes:
+      - ./user_service:/app
