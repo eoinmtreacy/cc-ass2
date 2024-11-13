@@ -55,15 +55,23 @@ def health_check():
 @app.route('/users/add', methods=['POST'])
 def create_user():
     data = request.json
-    user = User(
-         studentid=data['studentid'], 
-         firstname=data['firstname'],
-         lastname=data['lastname'], 
-         email=data['email']
-    )
-    db.session.add(user)
-    db.session.commit()
-    return jsonify(user.to_dict()), 201
+    if User.query.get(data['studentid']):
+        return jsonify({"error": "Student ID already exists"}), 400
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({"error": "Email already exists"}), 400
+    try:
+        user = User(
+            studentid=data['studentid'], 
+            firstname=data['firstname'],
+            lastname=data['lastname'], 
+            email=data['email']
+        )
+        db.session.add(user)
+        db.session.commit()
+        return jsonify(user.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 
 # READ all users
@@ -99,6 +107,11 @@ def update_user(studentid:str):
         if User.query.filter(User.email == data['email'], User.studentid != studentid).first():
             return jsonify({"error": "Email already exists"}), 400
         user.email = data['email']
+    if 'studentid' in data:
+        # Check if new studentid already exists for another user
+        if User.query.get(data['studentid']):
+            return jsonify({"error": "Student ID already exists"}), 400
+        user.studentid = data['studentid']
     db.session.commit()
     return jsonify(user.to_dict()), 200
 
