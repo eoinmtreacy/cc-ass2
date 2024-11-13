@@ -1,0 +1,9 @@
+services:
+  database:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: practical2
+    ports:
+      - "5432:5432"
