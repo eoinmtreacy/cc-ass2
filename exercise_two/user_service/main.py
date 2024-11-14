@@ -2,8 +2,12 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 import dotenv
+from datetime import date
+import json
 import os
+import pika
 
+# database connection ands setup
 dotenv.load_dotenv()
 
 db_user = os.getenv('POSTGRES_USER')
@@ -36,6 +40,14 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
+# rabbitmq init
+rabbitmq_user = os.getenv('RABBITMQ_DEFAULT_USER')
+rabbitmq_password = os.getenv('RABBITMQ_DEFAULT_PASS')
+rabbitmq_host = os.getenv('RABBITMQ_HOST')
+
+credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
+connection = pika.BlockingConnection(pika.ConnectionParameters(str(rabbitmq_host), 5672, '/', credentials))
+channel = connection.channel()
 
 @app.route('/', methods=['GET'])
 def health_check():
@@ -130,3 +142,21 @@ def delete_user(studentid:str):
 
 if __name__ == "__main__":
 	app.run(debug=True, host="0.0.0.0", port=5002)
+
+# POST a borrow request
+@app.route('/users/borrow/request', methods=['POST'])
+def borrow_book():
+    data = request.get_json()
+    required_fields = {'studentid', 'bookid', 'data_returned'}
+    if not data or not required_fields.issubset(data.keys()):
+        return jsonify({"error": "Invalid data format"}), 400
+    
+    channel.basic_publish(
+        exchange='', 
+        routing_key='borrow_request', 
+        body=json.dumps(data))
+
+    return jsonify({
+        "message": "Borrow request successfully posted",
+        "request": data
+    }), 201

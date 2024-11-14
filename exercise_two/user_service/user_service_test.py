@@ -25,6 +25,26 @@ def client():
         with app.app_context():
             db.drop_all()
 
+### /users/borrow/request TEST ###
+
+def test_borrow_book_success(client):
+    response = client.post('/users/borrow/request', json={
+        'studentid': '1',
+        'bookid': '101',
+        'data_returned': '2023-12-31'
+    })
+    assert response.status_code == 201
+    assert response.json['message'] == 'Borrow request successfully posted'
+
+def test_borrow_book_invalid_data(client):
+    response = client.post('/users/borrow/request', json={
+        'studentid': '1',
+        'bookid': '101'
+        # Missing 'data_returned'
+    })
+    assert response.status_code == 400
+    assert response.json['error'] == 'Invalid data format'
+
 ### /users/all TEST ###
 
 def test_get_users_empty(client):
