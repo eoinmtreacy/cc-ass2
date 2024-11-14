@@ -51,81 +51,75 @@ def health_check():
         return jsonify({"message": "Unhealthy: " + str(e)}), 500
 
 
-# CREATE users
-@app.route('/users/add', methods=['POST'])
-def create_user():
+# CREATE books
+@app.route('/books/add', methods=['POST'])
+def create_book():
     data = request.json
-    if User.query.get(data['studentid']):
-        return jsonify({"error": "Student ID already exists"}), 400
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({"error": "Email already exists"}), 400
+    if Book.query.get(data['bookid']):
+        return jsonify({"error": "Book ID already exists"}), 400
+    if Book.query.filter_by(bookid=data['bookid']).first():
+        return jsonify({"error": "Book already exists"}), 400
     try:
-        user = User(
-            studentid=data['studentid'], 
-            firstname=data['firstname'],
-            lastname=data['lastname'], 
-            email=data['email']
+        book = Book(
+            bookid=data['bookid'],
+            title=data['title'],
+            author=data['author']
         )
-        db.session.add(user)
+        db.session.add(book)
         db.session.commit()
-        return jsonify(user.to_dict()), 201
+        return jsonify(book.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
 
-# READ all users
-@app.route('/users/all', methods=['GET'])
+# READ all books
+@app.route('/books/all', methods=['GET'])
 def get_users():
-    users = User.query.all()
-    return jsonify([user.to_dict() for user in users]), 200
+    books = Book.query.all()
+    return jsonify([book.to_dict() for book in books]), 200
 
 
-# READ a single user by ID
-@app.route('/users/<studentid>', methods=['GET'])
-def get_user(studentid:str):
-    user = User.query.get(studentid)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    return jsonify(user.to_dict()), 200
+# READ a single book by ID
+@app.route('/books/<bookid>', methods=['GET'])
+def get_book(bookid: str):
+    book = Book.query.get(bookid)
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
+    return jsonify(book.to_dict()), 200
 
 
-# UPDATE a user by student_id
-@app.route('/users/<studentid>', methods=['PUT'])
-def update_user(studentid:str):
-    user = User.query.get(studentid)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+# UPDATE a book by bookid
+@app.route('/books/<bookid>', methods=['PUT'])
+def update_book(bookid: str):
+    book = Book.query.get(bookid)
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
 
     data = request.json
-    if 'firstname' in data:
-        user.firstname = data['firstname']
-    if 'lastname' in data:
-        user.lastname = data['lastname']
-    if 'email' in data:
-        # Check if new email already exists for another user
-        if User.query.filter(User.email == data['email'], User.studentid != studentid).first():
-            return jsonify({"error": "Email already exists"}), 400
-        user.email = data['email']
-    if 'studentid' in data:
-        # Check if new studentid already exists for another user
-        if User.query.get(data['studentid']):
-            return jsonify({"error": "Student ID already exists"}), 400
-        user.studentid = data['studentid']
+    if 'title' in data:
+        book.title = data['title']
+    if 'author' in data:
+        book.author = data['author']
+    if 'bookid' in data:
+        # Check if new email already exists for another book
+        if Book.query.filter(Book.bookid == data['bookid'], Book.bookid != bookid).first():
+            return jsonify({"error": "Book ID already exists"}), 400
+        book.bookid = data['bookid']
     db.session.commit()
-    return jsonify(user.to_dict()), 200
+    return jsonify(book.to_dict()), 200
 
 
-# DELETE a user by student_id
-@app.route('/users/<studentid>', methods=['DELETE'])
-def delete_user(studentid:str):
-    user = User.query.get(studentid)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+# DELETE a book by bookid
+@app.route('/books/<bookid>', methods=['DELETE'])
+def delete_book(bookid: str):
+    book = Book.query.get(bookid)
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
 
-    db.session.delete(user)
+    db.session.delete(book)
     db.session.commit()
-    return jsonify({"message": "User deleted successfully"}), 200
+    return jsonify({"message": "Book deleted successfully"}), 200
 
 
 if __name__ == "__main__":

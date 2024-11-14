@@ -53,8 +53,8 @@ def test_create_book(client):
         })
     assert response.status_code == 201
     assert response.json['bookid'] == '1'
-    assert response.json['title'] == 'John'
-    assert response.json['author'] == 'Doe'
+    assert response.json['title'] == 'Book Title'
+    assert response.json['author'] == 'Book Author'
     assert response.json['checked_out'] == False
 
 def test_create_book_duplicate_bookid(client):
@@ -121,7 +121,7 @@ def test_create_duplicate_bookid(client):
         'title': 'Another Book Title',
         'author': 'Another Book Author'
     })
-    response = client.put('/users/2', json={
+    response = client.put('/books/2', json={
         'bookid': '1'
     })
     assert response.status_code == 400
@@ -129,7 +129,7 @@ def test_create_duplicate_bookid(client):
 
     ### DELETE METHODS
 
-def test_delete_user(client):
+def test_delete_book(client):
     client.post('/books/add', json={
         'bookid': '1',
         'title': 'Book Title',
@@ -139,7 +139,7 @@ def test_delete_user(client):
     assert response.status_code == 200
     assert response.json['message'] == 'Book deleted successfully'
 
-def test_delete_user_not_found(client):
+def test_delete_book_not_found(client):
     response = client.delete('/books/1')
     assert response.status_code == 404
     assert response.json['error'] == 'Book not found'
