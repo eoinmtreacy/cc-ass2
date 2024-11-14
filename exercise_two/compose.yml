@@ -71,3 +71,15 @@ services:
       - FLASK_ENV=development
     volumes:
       - ./book_service:/app
+
+  borrow_service:
+    build: ./borrow_service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - ./borrow_service:/app
+    command: ["python", "main.py"]
