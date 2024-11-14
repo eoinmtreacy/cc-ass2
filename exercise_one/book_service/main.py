@@ -41,12 +41,12 @@ with app.app_context():
 def health_check():
     try:
         result = db.session.execute(text(
-            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'books')"
         )).scalar()
         if result:
             return jsonify({"message": "Healthy"}), 200
         else:
-            return jsonify({"message": "Unhealthy: 'users' table does not exist"}), 500
+            return jsonify({"message": "Unhealthy: 'books' table does not exist"}), 500
     except Exception as e:
         return jsonify({"message": "Unhealthy: " + str(e)}), 500
 
@@ -57,8 +57,6 @@ def create_book():
     data = request.json
     if Book.query.get(data['bookid']):
         return jsonify({"error": "Book ID already exists"}), 400
-    if Book.query.filter_by(bookid=data['bookid']).first():
-        return jsonify({"error": "Book already exists"}), 400
     try:
         book = Book(
             bookid=data['bookid'],
