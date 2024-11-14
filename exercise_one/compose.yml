@@ -26,3 +26,20 @@ services:
       FLASK_ENV: development
     volumes:
       - ./user_service:/app
+
+  book_service:
+    build: ./book_service
+    ports:
+      - "5006:5006"
+    depends_on:
+      - database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: practical2
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      FLASK_APP: main.py
+      FLASK_ENV: development
+    volumes:
+      - ./book_service:/app
