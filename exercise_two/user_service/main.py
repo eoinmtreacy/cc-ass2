@@ -132,6 +132,7 @@ def update_user(studentid:str):
 @app.route('/users/<studentid>', methods=['DELETE'])
 def delete_user(studentid:str):
     user = User.query.get(studentid)
+    print(user)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
