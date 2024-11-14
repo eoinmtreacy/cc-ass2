@@ -108,7 +108,7 @@ def test_get_user(random_studentid):
     assert response.json()['studentid'] == studentid
 
 def test_get_user_not_found():
-    response = requests.get(f'{base_url}/users/1')
+    response = requests.get(f'{base_url}/users/-1')
     assert response.status_code == 404
     assert response.json()['error'] == 'User not found'
 
@@ -129,32 +129,35 @@ def test_update_user(random_studentid):
     assert response.json()['firstname'] == 'Jane'
 
 def test_update_user_not_found():
-    response = requests.put(f'{base_url}/users/1', json={
+    response = requests.put(f'{base_url}/users/-1', json={
         'firstname': 'Jane'
     })
     assert response.status_code == 404
     assert response.json()['error'] == 'User not found'
 
-def test_update_user_duplicate_email():
+def test_update_user_duplicate_email(random_studentid):
+    student_id = random_studentid
     requests.post(f'{base_url}/users/add', json={
-        'studentid': '1',
+        'studentid': student_id,
         'firstname': 'John',
         'lastname': 'Doe',
-        'email': 'john.doe@example.com'
+        'email': f'john{student_id}@example.com'
     })
+    student_id2 = random_studentid
     requests.post(f'{base_url}/users/add', json={
-        'studentid': '2',
+        'studentid': student_id2,
         'firstname': 'Jane',
         'lastname': 'Smith',
-        'email': 'jane.smith@example.com'
+        'email': f'jane{student_id2}@example.com'
     })
-    response = requests.put(f'{base_url}/users/2', json={
-        'email': 'john.doe@example.com'
+    response = requests.put(f'{base_url}/users/{student_id2}', json={
+        'email': f'john{student_id}@example.com'
     })
     assert response.status_code == 400
     assert response.json()['error'] == 'Email already exists'
 
 def test_update_user_duplicate_studentid():
+
     requests.post(f'{base_url}/users/add', json={
         'studentid': '1',
         'firstname': 'John',
@@ -188,7 +191,7 @@ def test_delete_user(random_studentid):
     assert response.json()['message'] == 'User deleted successfully'
 
 def test_delete_user_not_found():
-    response = requests.delete(f'{base_url}/users/1')
+    response = requests.delete(f'{base_url}/users/-1')
     print(response.json())
     assert response.status_code == 404
     assert response.json()['error'] == 'User not found'

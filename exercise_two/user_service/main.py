@@ -103,6 +103,7 @@ def get_user(studentid:str):
 
 
 # UPDATE a user by student_id
+
 @app.route('/users/<studentid>', methods=['PUT'])
 def update_user(studentid:str):
     user = User.query.get(studentid)
@@ -119,14 +120,8 @@ def update_user(studentid:str):
         if User.query.filter(User.email == data['email'], User.studentid != studentid).first():
             return jsonify({"error": "Email already exists"}), 400
         user.email = data['email']
-    if 'studentid' in data:
-        # Check if new studentid already exists for another user
-        if User.query.get(data['studentid']):
-            return jsonify({"error": "Student ID already exists"}), 400
-        user.studentid = data['studentid']
     db.session.commit()
     return jsonify(user.to_dict()), 200
-
 
 # DELETE a user by student_id
 @app.route('/users/<studentid>', methods=['DELETE'])
