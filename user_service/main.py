@@ -39,6 +39,7 @@ with app.app_context():
 
 @app.route('/', methods=['GET'])
 def health_check():
+    print("something")
     try:
         result = db.session.execute(text(
             "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')"
@@ -129,4 +130,4 @@ def delete_user(studentid:str):
 
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0", port=5002)
+	app.run(debug=True, host="0.0.0.0", port=5002)
