@@ -1,5 +1,5 @@
 import pytest
-from main import app, db, User
+from user_service.main import app, db
 import dotenv
 import os
 

@@ -18,20 +18,20 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-class User(db.Model):
-    __tablename__ = 'users'
+class Book(db.Model):
+    __tablename__ = 'books'
 
-    studentid = db.Column(db.String(20), primary_key=True)
-    firstname = db.Column(db.String(50), nullable=False)
-    lastname = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    bookid = db.Column(db.String(20), primary_key=True)
+    title = db.Column(db.String(50), nullable=False)
+    author = db.Column(db.String(50), nullable=False)
+    checked_out = db.Column(db.Boolean(), default=False, nullable=False)
     
     def to_dict(self):
         return {
-            "studentid": self.studentid,
-            "firstname": self.firstname,
-            "lastname": self.lastname,
-            "email": self.email
+            "bookid": self.bookid,
+            "title": self.title,
+            "author": self.author,
+            "checked_out": self.checked_out
         }
 with app.app_context():
     db.create_all()
@@ -129,4 +129,4 @@ def delete_user(studentid:str):
 
 
 if __name__ == "__main__":
-	app.run(debug=True, host="0.0.0.0", port=5002)
+	app.run(debug=True, host="0.0.0.0", port=5006)
