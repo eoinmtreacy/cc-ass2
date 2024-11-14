@@ -9,13 +9,19 @@ services:
       - "5432:5432"
     volumes:
       - ./database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
 
   user_service:
     build: ./user_service
     ports:
       - "5002:5002"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -32,7 +38,8 @@ services:
     ports:
       - "5006:5006"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
