@@ -7,8 +7,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5432:5432"
-    volumes:
-      - ./database:/var/lib/postgresql/data
+    # volumes:
+    #   - ./database:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -75,11 +75,10 @@ services:
   borrow_service:
     build: ./borrow_service
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_HOST=rabbitmq
-    volumes:
-      - ./borrow_service:/app
-    command: ["python", "main.py"]
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_HOST: rabbitmq
