@@ -11,9 +11,21 @@ def random_studentid():
 
 ### /users/borrow/request TEST ###
 
-def test_borrow_book_success(random_studentid):
+def test_borrow_book_success(random_studentid, capsys):
+    student_id = random_studentid
+    requests.post(f'{base_url}/users/add', json={
+        'studentid': student_id,
+        'firstname': f'John{student_id}',
+        'lastname': 'Doe',
+        'email': f"{student_id}@gmail.com"
+    })
+    print(f"Student ID: {student_id}")
+
+    captured = capsys.readouterr()
+    print(captured.out)
+    
     response = requests.post(f'{base_url}/users/borrow/request', json={
-        'studentid': random_studentid,
+        'studentid': student_id,
         'bookid': '101',
         'data_returned': '2023-12-31'
     })

@@ -72,13 +72,15 @@ services:
     volumes:
       - ./book_service:/app
 
-  borrow_service:
-    build: ./borrow_service
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-      RABBITMQ_HOST: rabbitmq
+  # borrow_service:
+  #   build: ./borrow_service
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   restart: always
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+  #     RABBITMQ_HOST: rabbitmq
+  #     USER_SERVICE_HOST: user_service
+  #     BOOK_SERVICE_HOST: book_service

@@ -143,10 +143,10 @@ if __name__ == "__main__":
 @app.route('/users/borrow/request', methods=['POST'])
 def borrow_book():
     data = request.get_json()
-    required_fields = {'studentid', 'bookid', 'data_returned'}
+    required_fields = {'studentid', 'bookid', 'date_returned'}
     if not data or not required_fields.issubset(data.keys()):
         return jsonify({"error": "Invalid data format"}), 400
-    
+
     channel.basic_publish(
         exchange='', 
         routing_key='borrow_request', 
