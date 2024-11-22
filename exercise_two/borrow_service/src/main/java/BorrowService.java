@@ -4,7 +4,6 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.rabbitmq.client.AMQP;
@@ -17,15 +16,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class BorrowService implements Consumer {
-    private final static String POSTGRES_USER = System.getenv("POSTGRES_USER");
-    private final static String POSTGRES_PASSWORD = System.getenv("POSTGRES_PASSWORD");
-    private final static String POSTGRES_DB = System.getenv("POSTGRES_DB");
-    private final static String POSTGRES_HOST = System.getenv("POSTGRES_HOST");
-    private final static String POSTGRES_PORT = System.getenv("POSTGRES_PORT");
+    private final static String POSTGRES_USER = new String("postgres");
+    private final static String POSTGRES_PASSWORD = new String("postgres");
+    private final static String POSTGRES_DB = new String("practical2");
+    private final static String POSTGRES_HOST = new String("localhost");
+    private final static String POSTGRES_PORT = new String("5432");
 
     private Connection databaseConnection;
 
     public BorrowService() {
+        System.out.println(
+                "POSTGRES_USER: " + POSTGRES_USER + "\n" +
+                        "POSTGRES_PASSWORD: " + POSTGRES_PASSWORD + "\n" +
+                        "POSTGRES_DB: " + POSTGRES_DB + "\n" +
+                        "POSTGRES_HOST: " + POSTGRES_HOST + "\n" +
+                        "POSTGRES_PORT: " + POSTGRES_PORT + "\n"   
+        );
         this.databaseConnection = createDatabaseConnection();
     }
 
@@ -40,12 +46,17 @@ public class BorrowService implements Consumer {
 
             String userServiceHost = System.getenv("USER_SERVICE_HOST");
             String userServicePort = System.getenv("USER_SERVICE_PORT");
-            String borrowServiceHost = System.getenv("BORROW_SERVICE_HOST");
+            String bookServiceHost = System.getenv("BOOK_SERVICE_HOST");
+            String bookServicePort = System.getenv("BOOK_SERVICE_PORT");
 
             if (userServiceHost == null)
                 userServiceHost = "localhost";
             if (userServicePort == null)
                 userServicePort = "5002";
+            if (bookServiceHost == null)
+                bookServiceHost = "localhost";
+            if (bookServicePort == null)
+                bookServicePort = "5006";
 
             BorrowServiceRequest borrowServiceRequest = createBorrowServiceRequest(message);
 
@@ -54,10 +65,10 @@ public class BorrowService implements Consumer {
                             + borrowServiceRequest.studentId);
 
             String books = new String(
-                    "http://" + userServiceHost + ":" + userServicePort + "/books/"
+                    "http://" + bookServiceHost + ":" + bookServicePort + "/books/"
                             + borrowServiceRequest.bookId);
 
-            if (checkIdIntegrity(users) && checkIdIntegrity(books)) {
+            if (checkUser(users) && checkBook(books)) {
                 this.databaseConnection.createStatement().executeUpdate(
                         "INSERT INTO borrowed_books VALUES ('" + borrowServiceRequest.studentId
                                 + "', '" + borrowServiceRequest.bookId + "', '"
@@ -91,10 +102,10 @@ public class BorrowService implements Consumer {
                 // Create the table if it doesn't exist
                 statement.executeUpdate(
                         "CREATE TABLE borrowed_books (" +
-                                "user_id VARCHAR(255) NOT NULL, " +
-                                "book_id VARCHAR(255) NOT NULL, " +
-                                "borrow_date DATE NOT NULL, " +
-                                "PRIMARY KEY (user_id, book_id)" +
+                                "studentId VARCHAR(255) NOT NULL, " +
+                                "bookId VARCHAR(255) NOT NULL, " +
+                                "date_returned DATE NOT NULL, " +
+                                "PRIMARY KEY (studentId, bookId)" +
                                 ");");
                 System.out.println("Table 'borrowed_books' created successfully.");
             } else {
@@ -122,22 +133,65 @@ public class BorrowService implements Consumer {
         }
     }
 
-    private boolean checkIdIntegrity(String urlString) {
+    private boolean checkUser(String studentId) {
+
+        // check user exists
         try {
-            URL url = new URL(urlString);
+            URL url = new URL(studentId);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setDoOutput(true);
 
-            if (connection.getResponseCode() == 200) {
-                return true;
-            } else {
-                System.out.println(
-                        "GET request to " + url + " service failed with response code: "
-                                + connection.getResponseCode());
-                return false;
-            }
+            if (connection.getResponseCode() != 200) return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // check user has no more than 5 books borrowed already
+        try {
+            Statement statement = this.databaseConnection.createStatement();
+            ResultSet resultSet = statement.executeQuery(
+                    "SELECT COUNT(*) FROM borrowed_books WHERE studentId = '" + studentId + "';");
+            resultSet.next();
+            int count = resultSet.getInt(1);
+            if (count < 5) return true;
+            else return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    private boolean checkBook(String bookId) {
+        // check book exists
+        try {
+            URL url = new URL(bookId);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            if (connection.getResponseCode() != 200) return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        // check book is not borrowed
+        try {
+            Statement statement = this.databaseConnection.createStatement();
+            ResultSet resultSet = statement.executeQuery(
+                    "SELECT COUNT(*) FROM borrowed_books WHERE bookId = '" + bookId + "';");
+            resultSet.next();
+            int count = resultSet.getInt(1);
+            if (count == 0) return true;
+            else return false;
 
         } catch (Exception e) {
             e.printStackTrace();
