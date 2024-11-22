@@ -16,22 +16,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class BorrowService implements Consumer {
-    private final static String POSTGRES_USER = new String("postgres");
-    private final static String POSTGRES_PASSWORD = new String("postgres");
-    private final static String POSTGRES_DB = new String("practical2");
-    private final static String POSTGRES_HOST = new String("localhost");
-    private final static String POSTGRES_PORT = new String("5432");
+    private final static String POSTGRES_USER = System.getenv("POSTGRES_USER");
+    private final static String POSTGRES_PASSWORD = System.getenv("POSTGRES_PASSWORD");
+    private final static String POSTGRES_DB = System.getenv("POSTGRES_DB");
+    private final static String POSTGRES_HOST = System.getenv("POSTGRES_HOST");
+    private final static String POSTGRES_PORT = System.getenv("POSTGRES_PORT");
 
     private Connection databaseConnection;
 
     public BorrowService() {
-        System.out.println(
-                "POSTGRES_USER: " + POSTGRES_USER + "\n" +
-                        "POSTGRES_PASSWORD: " + POSTGRES_PASSWORD + "\n" +
-                        "POSTGRES_DB: " + POSTGRES_DB + "\n" +
-                        "POSTGRES_HOST: " + POSTGRES_HOST + "\n" +
-                        "POSTGRES_PORT: " + POSTGRES_PORT + "\n"   
-        );
         this.databaseConnection = createDatabaseConnection();
     }
 
