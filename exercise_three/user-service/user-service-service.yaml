@@ -4,7 +4,10 @@ metadata:
   name: user-service
   namespace: practical2
 spec:
+  NodePort: 30002
   ports:
   - port: 5002
+    targetPort: 5002
+    nodePort: 30002
   selector:
     app: user-service

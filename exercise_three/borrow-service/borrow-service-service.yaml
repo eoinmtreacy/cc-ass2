@@ -4,7 +4,6 @@ metadata:
   name: borrow-service
   namespace: practical2
 spec:
-  ports:
-  - port: 5004
+  clusterIP: None
   selector:
     app: borrow-service

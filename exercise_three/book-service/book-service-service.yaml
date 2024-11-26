@@ -4,7 +4,10 @@ metadata:
   name: book-service
   namespace: practical2
 spec:
+  type: NodePort
   ports:
   - port: 5006
+    targetPort: 5006
+    nodePort: 30006
   selector:
     app: book-service

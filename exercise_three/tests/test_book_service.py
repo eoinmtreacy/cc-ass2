@@ -1,8 +1,14 @@
 import pytest
 import requests
 import random
+import os
 
-base_url = 'http://localhost:5006'
+def pytest_addoption(parser):
+    parser.addoption("--base-url", action="store", default="http://localhost:5006", help="Base URL for the API")
+
+@pytest.fixture
+def base_url(request):
+    return request.config.getoption("--base-url")
 
 @pytest.fixture
 def random_bookid():
@@ -10,7 +16,7 @@ def random_bookid():
 
 ### /books/all TEST ###
 
-def test_get_books(random_bookid):
+def test_get_books(random_bookid, base_url):
     bookid = random_bookid
     requests.post(f'{base_url}/books/add', json={
         'bookid': bookid,
@@ -23,7 +29,7 @@ def test_get_books(random_bookid):
 
 ### /books/add ###
 
-def test_create_book(random_bookid):
+def test_create_book(random_bookid, base_url):
     bookid = random_bookid
     response = requests.post(f'{base_url}/books/add', json={
         'bookid': bookid,
@@ -36,7 +42,7 @@ def test_create_book(random_bookid):
     assert response.json()['author'] == 'Book Author'
     assert response.json()['checked_out'] == False
 
-def test_create_book_duplicate_bookid(random_bookid):
+def test_create_book_duplicate_bookid(random_bookid, base_url):
     bookid = random_bookid
     requests.post(f'{base_url}/books/add', json={
         'bookid': bookid,
@@ -54,7 +60,7 @@ def test_create_book_duplicate_bookid(random_bookid):
 ### /books/<bookid> TESTS ###
     ### GET METHODS
 
-def test_get_book(random_bookid):
+def test_get_book(random_bookid, base_url):
     bookid = random_bookid
     requests.post(f'{base_url}/books/add', json={
         'bookid': bookid,
@@ -65,14 +71,14 @@ def test_get_book(random_bookid):
     assert response.status_code == 200
     assert response.json()['bookid'] == bookid
 
-def test_get_book_not_found():
+def test_get_book_not_found(base_url):
     response = requests.get(f'{base_url}/books/nonexistent')
     assert response.status_code == 404
     assert response.json()['error'] == 'Book not found'
 
     ### PUT METHODS
 
-def test_update_book(random_bookid):
+def test_update_book(random_bookid, base_url):
     bookid = random_bookid
     requests.post(f'{base_url}/books/add', json={
         'bookid': bookid,
@@ -85,14 +91,14 @@ def test_update_book(random_bookid):
     assert response.status_code == 200
     assert response.json()['title'] == 'Something weird and wonderful'
 
-def test_update_book_not_found():
+def test_update_book_not_found(base_url):
     response = requests.put(f'{base_url}/books/nonexistent', json={
         'title': 'Something weird and wonderful'
     })
     assert response.status_code == 404
     assert response.json()['error'] == 'Book not found'
 
-def test_create_duplicate_bookid(random_bookid):
+def test_create_duplicate_bookid(random_bookid, base_url):
     bookid1 = random_bookid
     requests.post(f'{base_url}/books/add', json={
         'bookid': bookid1,
@@ -110,7 +116,7 @@ def test_create_duplicate_bookid(random_bookid):
 
     ### DELETE METHODS
 
-def test_delete_book(random_bookid):
+def test_delete_book(random_bookid, base_url):
     bookid = random_bookid
     requests.post(f'{base_url}/books/add', json={
         'bookid': bookid,
@@ -121,7 +127,7 @@ def test_delete_book(random_bookid):
     assert response.status_code == 200
     assert response.json()['message'] == 'Book deleted successfully'
 
-def test_delete_book_not_found():
+def test_delete_book_not_found(base_url):
     response = requests.delete(f'{base_url}/books/nonexistent')
     assert response.status_code == 404
     assert response.json()['error'] == 'Book not found'
