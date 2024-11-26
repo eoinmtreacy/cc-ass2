@@ -1,0 +1,23 @@
+namespace: practical2
+
+resources:
+  - k8s/namespace.yaml
+  - k8s/configmap.yaml
+  - k8s/secret.yaml
+
+  - database/database-deployment.yaml
+  - database/database-service.yaml
+  - database/persistentvolume.yaml
+  - database/persistentvolumeclaim.yaml
+
+  - rabbitmq/rabbitmq-deployment.yaml
+  - rabbitmq/rabbitmq-service.yaml
+
+  - user-service/user-service-deployment.yaml
+  - user-service/user-service-service.yaml
+
+  - book-service/book-service-deployment.yaml
+  - book-service/book-service-service.yaml
+
+  - borrow-service/borrow-service-deployment.yaml
+  - borrow-service/borrow-service-service.yaml

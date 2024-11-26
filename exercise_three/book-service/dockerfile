@@ -1,3 +1,4 @@
+# python slim
 FROM python:3.8-slim
 
 WORKDIR /app
@@ -8,7 +9,9 @@ RUN pip install -r requirements.txt
 
 COPY . ./app
 
-EXPOSE 5002
+EXPOSE 5006
 
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5002", "--debug"]
+ENV FLASK_APP=app/main.py
+
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5006", "--debug"]
 
